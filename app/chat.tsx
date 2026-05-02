@@ -149,7 +149,8 @@ export default function Chat() {
   return (
     <View className="flex-1 bg-forest-50">
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
         className="flex-1"
       >
         <View

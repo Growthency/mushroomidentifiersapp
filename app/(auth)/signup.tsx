@@ -37,7 +37,8 @@ export default function Signup() {
   return (
     <Screen>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
         className="mt-6 gap-4"
       >
         <View className="mb-2">

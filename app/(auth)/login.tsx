@@ -28,7 +28,8 @@ export default function Login() {
   return (
     <Screen scroll={false}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
         className="flex-1 justify-center"
       >
         <View className="gap-4">
