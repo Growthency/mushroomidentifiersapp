@@ -10,21 +10,18 @@ import { useAuthStore } from "@/stores/authStore";
 import { edibilityColor, edibilityLabel } from "@/lib/utils";
 import type { JournalEntry } from "@/types";
 
-// Lazy-load native module — react-native-maps only works on iOS/Android, not web.
-let MapView: any = null;
-let Marker: any = null;
-let PROVIDER_GOOGLE: any = null;
+// react-native-maps is bundled into Expo Go on iOS/Android. On web it isn't
+// available, so we resolve the module via require so Metro doesn't try to
+// pull native code into the web bundle.
+type MapsModule = typeof import("react-native-maps");
+let mapsMod: MapsModule | null = null;
 if (Platform.OS !== "web") {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const maps = require("react-native-maps");
-    MapView = maps.default;
-    Marker = maps.Marker;
-    PROVIDER_GOOGLE = maps.PROVIDER_GOOGLE;
-  } catch {
-    // module not available (e.g. web preview) — silent fallback
-  }
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  mapsMod = require("react-native-maps") as MapsModule;
 }
+const MapView = mapsMod?.default;
+const Marker = mapsMod?.Marker;
+const PROVIDER_GOOGLE = mapsMod?.PROVIDER_GOOGLE;
 
 const DEFAULT_REGION = {
   latitude: 23.8103, // Dhaka — sensible default until we have user location
@@ -97,8 +94,8 @@ export default function MapScreen() {
     }
   };
 
-  // Web / Expo Go without native module — graceful fallback
-  if (!MapView) {
+  // Only the web preview lacks native maps — phone builds always have it.
+  if (!MapView || !Marker) {
     return (
       <View className="flex-1 items-center justify-center bg-forest-50 px-6">
         <Pressable
@@ -110,10 +107,10 @@ export default function MapScreen() {
         </Pressable>
         <MapPin size={48} color="#4A7C2A" />
         <Text className="mt-4 text-center font-display text-xl font-bold text-forest-900">
-          Map requires native build
+          Map preview only on phone
         </Text>
         <Text className="mt-2 text-center text-sm text-forest-700">
-          Open the app on your phone via Expo Go or a dev client to use the foraging map.
+          Open Mushroom Identifiers on your Android or iOS device to use the foraging map.
         </Text>
       </View>
     );

@@ -69,7 +69,7 @@ export async function getTrendingFungi(opts: {
   days?: number;
   limit?: number;
 }): Promise<TrendingSpecies[]> {
-  const { lat, lon, radiusKm = 100, days = 14, limit = 5 } = opts;
+  const { lat, lon, radiusKm = 200, days = 30, limit = 20 } = opts;
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const url = `${BASE}/observations/species_counts?iconic_taxa=Fungi&lat=${lat}&lng=${lon}&radius=${radiusKm}&d1=${since}&per_page=${limit}&order=desc`;
   const r = await fetch(url);
@@ -77,5 +77,28 @@ export async function getTrendingFungi(opts: {
   const json = (await r.json()) as {
     results: { count: number; taxon: INatTaxon }[];
   };
-  return json.results.map((row) => ({ taxon: row.taxon, count: row.count }));
+  let rows = json.results.map((row) => ({ taxon: row.taxon, count: row.count }));
+
+  // If fewer than 20 results, broaden to a 365-day window so users in low-density
+  // regions still see meaningful content instead of "1 sighting".
+  if (rows.length < limit) {
+    const farSince = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+    const farUrl = `${BASE}/observations/species_counts?iconic_taxa=Fungi&lat=${lat}&lng=${lon}&radius=${radiusKm}&d1=${farSince}&per_page=${limit}&order=desc`;
+    const fr = await fetch(farUrl);
+    if (fr.ok) {
+      const fj = (await fr.json()) as { results: { count: number; taxon: INatTaxon }[] };
+      const seen = new Set(rows.map((r) => r.taxon.id));
+      for (const row of fj.results) {
+        if (rows.length >= limit) break;
+        if (!seen.has(row.taxon.id)) {
+          rows.push({ taxon: row.taxon, count: row.count });
+          seen.add(row.taxon.id);
+        }
+      }
+    }
+  }
+
+  return rows;
 }

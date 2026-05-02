@@ -44,7 +44,7 @@ export default function Home() {
   const trending = useQuery({
     queryKey: ["trending", coords?.lat?.toFixed(2), coords?.lon?.toFixed(2)],
     queryFn: () =>
-      coords ? getTrendingFungi({ lat: coords.lat, lon: coords.lon, limit: 3 }) : Promise.resolve([]),
+      coords ? getTrendingFungi({ lat: coords.lat, lon: coords.lon, limit: 20 }) : Promise.resolve([]),
     enabled: !!coords,
     staleTime: 30 * 60_000, // 30 min
   });

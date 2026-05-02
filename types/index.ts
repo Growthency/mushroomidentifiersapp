@@ -59,4 +59,5 @@ export type Mushroom = {
   spore_print_color: string | null;
   cap_size_cm: [number, number] | null;
   region: string[] | null;
+  inaturalist_taxon_id?: number | null;
 };

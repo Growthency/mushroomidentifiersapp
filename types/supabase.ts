@@ -97,6 +97,7 @@ export type Database = {
           spore_print_color: string | null;
           cap_size_cm: number[] | null;
           region: string[] | null;
+          inaturalist_taxon_id: number | null;
         };
         Insert: Partial<Database["public"]["Tables"]["mushrooms"]["Row"]> & { scientific_name: string; edibility: string };
         Update: Partial<Database["public"]["Tables"]["mushrooms"]["Row"]>;

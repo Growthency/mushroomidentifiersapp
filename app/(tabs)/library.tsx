@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect } from "react";
-import { View, Text, Pressable, FlatList, Image, RefreshControl } from "react-native";
+import { View, Text, Pressable, FlatList, Image, RefreshControl, ScrollView } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Search } from "lucide-react-native";
 import { useQuery } from "@tanstack/react-query";
 import { Screen, Input, EdibilityBadge, Card } from "@/components/ui";
 import { searchTaxa, type INatTaxon } from "@/lib/inaturalist";
 import { supabase } from "@/lib/supabase";
+import { useTaxonPhoto } from "@/hooks/useTaxonPhoto";
 import type { Mushroom } from "@/types";
 
 const FILTERS = [
@@ -77,14 +78,17 @@ export default function Library() {
         />
       </View>
 
-      <FlatList
+      {/* Filter pills — wrapped in ScrollView with fixed height to prevent
+          Android list-in-list clipping that was hiding the pills earlier. */}
+      <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        data={FILTERS}
-        keyExtractor={(f) => f.id}
-        contentContainerStyle={{ paddingVertical: 12, gap: 8 }}
-        renderItem={({ item }) => (
+        style={{ maxHeight: 56, marginVertical: 8 }}
+        contentContainerStyle={{ alignItems: "center", gap: 8, paddingVertical: 6 }}
+      >
+        {FILTERS.map((item) => (
           <Pressable
+            key={item.id}
             onPress={() => setFilter(item.id)}
             className={`rounded-full px-4 py-2 ${
               filter === item.id ? "bg-forest-700" : "bg-white"
@@ -98,8 +102,8 @@ export default function Library() {
               {item.label}
             </Text>
           </Pressable>
-        )}
-      />
+        ))}
+      </ScrollView>
 
       <FlatList
         data={items}
@@ -108,29 +112,7 @@ export default function Library() {
         refreshControl={
           <RefreshControl refreshing={local.isFetching} onRefresh={() => local.refetch()} />
         }
-        renderItem={({ item }) => (
-          <Pressable onPress={() => router.push(`/mushroom/${item.id}`)}>
-            <Card className="flex-row gap-3">
-              {item.photos[0] ? (
-                <Image
-                  source={{ uri: item.photos[0] }}
-                  style={{ width: 64, height: 64, borderRadius: 12 }}
-                />
-              ) : (
-                <View className="h-16 w-16 items-center justify-center rounded-xl bg-forest-100">
-                  <Text className="text-2xl">🍄</Text>
-                </View>
-              )}
-              <View className="flex-1 justify-center gap-1">
-                <Text className="font-semibold text-forest-900">
-                  {item.common_names[0] ?? item.scientific_name}
-                </Text>
-                <Text className="text-xs italic text-forest-700">{item.scientific_name}</Text>
-                <EdibilityBadge edibility={item.edibility} />
-              </View>
-            </Card>
-          </Pressable>
-        )}
+        renderItem={({ item }) => <MushroomRow item={item} />}
         ListEmptyComponent={
           <View className="mt-12 items-center gap-2">
             <Search size={32} color="#6A9C4F" />
@@ -159,5 +141,41 @@ function taxonToMushroom(t: INatTaxon): Mushroom {
     spore_print_color: null,
     cap_size_cm: null,
     region: null,
+    inaturalist_taxon_id: t.id,
   };
+}
+
+/**
+ * Library row — shows the stored photo if we have one, otherwise lazy-fetches
+ * the canonical iNaturalist photo using the taxon id. Falls back to the
+ * mushroom emoji while loading or when nothing is found.
+ */
+function MushroomRow({ item }: { item: Mushroom }) {
+  const inatId = item.inaturalist_taxon_id ?? null;
+  const { data: fetchedPhoto } = useTaxonPhoto(item.photos[0] ? null : inatId);
+  const uri = item.photos[0] ?? fetchedPhoto ?? null;
+
+  return (
+    <Pressable onPress={() => router.push(`/mushroom/${item.id}`)}>
+      <Card className="flex-row gap-3">
+        {uri ? (
+          <Image
+            source={{ uri }}
+            style={{ width: 64, height: 64, borderRadius: 12, backgroundColor: "#DCE9D2" }}
+          />
+        ) : (
+          <View className="h-16 w-16 items-center justify-center rounded-xl bg-forest-100">
+            <Text className="text-2xl">🍄</Text>
+          </View>
+        )}
+        <View className="flex-1 justify-center gap-1">
+          <Text className="font-semibold text-forest-900">
+            {item.common_names[0] ?? item.scientific_name}
+          </Text>
+          <Text className="text-xs italic text-forest-700">{item.scientific_name}</Text>
+          <EdibilityBadge edibility={item.edibility} />
+        </View>
+      </Card>
+    </Pressable>
+  );
 }

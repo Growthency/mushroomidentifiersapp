@@ -6,6 +6,7 @@ import { ArrowLeft, BookOpen, AlertTriangle } from "lucide-react-native";
 import { Card, Screen, Badge, EdibilityBadge, Button } from "@/components/ui";
 import { supabase } from "@/lib/supabase";
 import { getTaxonByScientificName } from "@/lib/inaturalist";
+import { useTaxonPhoto } from "@/hooks/useTaxonPhoto";
 import type { Mushroom } from "@/types";
 
 export default function MushroomDetail() {
@@ -64,9 +65,7 @@ export default function MushroomDetail() {
         <Text className="font-semibold text-forest-700">Back</Text>
       </Pressable>
 
-      {data.photos[0] && (
-        <Image source={{ uri: data.photos[0] }} className="w-full rounded-2xl" style={{ height: 240 }} />
-      )}
+      <MushroomHero data={data} />
 
       <View className="mt-4">
         <Text className="font-display text-2xl font-bold text-forest-900">
@@ -112,5 +111,22 @@ export default function MushroomDetail() {
         Identify a similar one
       </Button>
     </Screen>
+  );
+}
+
+/** Hero image — uses stored photo if present, otherwise lazy-fetches iNaturalist. */
+function MushroomHero({ data }: { data: Mushroom }) {
+  const inatId =
+    data.inaturalist_taxon_id ??
+    (data.id.startsWith("inat-") ? Number(data.id.replace("inat-", "")) : null);
+  const { data: fetchedPhoto } = useTaxonPhoto(data.photos[0] ? null : inatId);
+  const uri = data.photos[0] ?? fetchedPhoto ?? null;
+  if (!uri) return null;
+  return (
+    <Image
+      source={{ uri }}
+      className="w-full rounded-2xl"
+      style={{ height: 240, backgroundColor: "#DCE9D2" }}
+    />
   );
 }
