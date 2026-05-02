@@ -1,0 +1,211 @@
+{
+  "expo": {
+    "name": "MushroomIdentifiers",
+    "slug": "mushroom-identifiers",
+    "scheme": "mushroomid",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/android-chrome-512x512.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/android-chrome-512x512.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F1B0A"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mushroomidentifiers.app",
+      "buildNumber": "1",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSCameraUsageDescription": "MushroomIdentifiers uses your camera to capture mushroom photos for AI identification.",
+        "NSPhotoLibraryUsageDescription": "MushroomIdentifiers needs access to your photos to let you identify mushrooms from your gallery.",
+        "NSPhotoLibraryAddUsageDescription": "MushroomIdentifiers saves identification reports and mushroom photos to your gallery.",
+        "NSLocationWhenInUseUsageDescription": "MushroomIdentifiers uses your location to map foraging finds and provide region-specific species data.",
+        "NSMicrophoneUsageDescription": "MushroomIdentifiers uses the microphone for voice notes attached to your foraging journal entries.",
+        "NSUserTrackingUsageDescription": "Allow MushroomIdentifiers to use app analytics to improve identification accuracy.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "associatedDomains": [
+        "applinks:mushroomidentifiers.com"
+      ]
+    },
+    "android": {
+      "package": "com.mushroomidentifiers.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-chrome-512x512.png",
+        "backgroundColor": "#0F1B0A"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.VIBRATE",
+        "android.permission.INTERNET",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO",
+        "com.google.android.gms.permission.AD_ID"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "mushroomidentifiers.com",
+              "pathPrefix": "/m"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/android-chrome-512x512.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow MushroomIdentifiers to access your camera to identify mushrooms.",
+          "microphonePermission": "Allow MushroomIdentifiers to access your microphone for voice notes.",
+          "recordAudioAndroid": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow MushroomIdentifiers to access your photos to identify mushrooms.",
+          "cameraPermission": "Allow MushroomIdentifiers to use your camera."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow MushroomIdentifiers to use your location to map foraging finds."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow MushroomIdentifiers to save reports to your gallery.",
+          "savePhotosPermission": "Allow MushroomIdentifiers to save photos to your gallery.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-chrome-512x512.png",
+          "color": "#4A7C2A"
+        }
+      ],
+      "expo-secure-store",
+      "expo-localization",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0F1B0A",
+          "image": "./assets/android-chrome-512x512.png",
+          "imageWidth": 200
+        }
+      ],
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "Allow MushroomIdentifiers to track app usage to improve identification accuracy."
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511",
+          "userTrackingUsageDescription": "This identifier helps us serve more relevant ads in the free tier. Subscribe to remove ads entirely.",
+          "skAdNetworkItems": [
+            "cstr6suwn9.skadnetwork",
+            "4fzdc2evr5.skadnetwork",
+            "2fnua5tdw4.skadnetwork",
+            "ydx93a7ass.skadnetwork",
+            "p78axxw29g.skadnetwork",
+            "v72qych5uu.skadnetwork",
+            "ludvb6z3bs.skadnetwork",
+            "cp8zw746q7.skadnetwork",
+            "3sh42y64q3.skadnetwork",
+            "c6k4g5qg8m.skadnetwork",
+            "s39g8k73mm.skadnetwork",
+            "3qy4746246.skadnetwork",
+            "f38h382jlk.skadnetwork",
+            "hs6bdukanm.skadnetwork",
+            "v4nxqhlyqp.skadnetwork",
+            "wzmmz9fp6w.skadnetwork",
+            "yclnxrl5pm.skadnetwork",
+            "t38b2kh725.skadnetwork",
+            "7ug5zh24hu.skadnetwork",
+            "gta9lk7p23.skadnetwork",
+            "vutu7akeur.skadnetwork",
+            "y5ghdn5j9k.skadnetwork",
+            "v9wttpbfk9.skadnetwork",
+            "n38lu8286q.skadnetwork",
+            "47vhws6wlr.skadnetwork",
+            "kbd757ywx3.skadnetwork",
+            "9t245vhmpl.skadnetwork",
+            "a2p9lx4jpn.skadnetwork",
+            "22mmun2rn5.skadnetwork",
+            "4468km3ulz.skadnetwork",
+            "2u9pt9hc89.skadnetwork",
+            "8s468mfl3y.skadnetwork",
+            "klf5c3l5u5.skadnetwork",
+            "ppxm28t8ap.skadnetwork",
+            "ecpz2srf59.skadnetwork",
+            "uw77j35x4d.skadnetwork",
+            "pwa73g5rt2.skadnetwork",
+            "578prtvx9j.skadnetwork",
+            "4dzt52r2t5.skadnetwork",
+            "tl55sbb4fm.skadnetwork",
+            "e5fvkxwrpn.skadnetwork",
+            "8c4e2ghe7u.skadnetwork",
+            "3rd42ekr43.skadnetwork",
+            "3qcr597p9d.skadnetwork"
+          ]
+        }
+      ],
+      "expo-asset"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "tsconfigPaths": true
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/REPLACE_WITH_EAS_PROJECT_ID"
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "auto"
+      }
+    },
+    "owner": "your-expo-account"
+  }
+}

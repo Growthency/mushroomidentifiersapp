@@ -1,0 +1,87 @@
+# ============================================================================
+# MushroomID — .gitignore
+# ============================================================================
+
+# ----- Secrets / env -----
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+*.pem
+*.key
+*.keystore
+
+# ----- Node / Bun / pnpm -----
+node_modules/
+npm-debug.*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.yarn/cache
+.yarn/install-state.gz
+package-lock.json.bak
+
+# ----- Expo -----
+.expo/
+.expo-shared/
+dist/
+web-build/
+expo-env.d.ts
+
+# ----- EAS -----
+.easignore
+eas.json.bak
+
+# ----- React Native / Metro -----
+.metro-health-check*
+*.jsbundle
+ios/Pods/
+ios/build/
+ios/.xcode.env.local
+ios/*.xcworkspace
+android/build/
+android/app/build/
+android/app/release/
+android/.gradle/
+android/local.properties
+*.apk
+*.aab
+*.ipa
+
+# ----- Native (auto-generated when prebuild runs) -----
+ios/
+android/
+
+# ----- TypeScript -----
+*.tsbuildinfo
+.tsc-cache/
+
+# ----- Testing / coverage -----
+coverage/
+.jest-cache/
+
+# ----- IDE / OS -----
+.idea/
+.vscode/*
+!.vscode/settings.json.example
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ----- Logs -----
+logs/
+*.log
+
+# ----- Sentry -----
+.sentryclirc
+sentry.properties
+
+# ----- Misc -----
+.cache/
+.temp/
+.tmp/
+*.backup
