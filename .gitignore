@@ -80,6 +80,14 @@ logs/
 .sentryclirc
 sentry.properties
 
+# ----- Notes / scratchpads (often contain secrets) -----
+prompt.txt
+prompt-*.txt
+notes.md
+secrets.md
+NOTES.md
+qr-scan.html
+
 # ----- Misc -----
 .cache/
 .temp/

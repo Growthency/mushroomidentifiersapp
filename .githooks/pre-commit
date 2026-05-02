@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Pre-commit hook — block commits that contain known secret patterns.
+# Install once with:  git config core.hooksPath .githooks
+
+set -e
+
+PATTERNS=(
+  'AIzaSy[A-Za-z0-9_-]{30,}'                # Google API keys
+  'sk-ant-[A-Za-z0-9_-]{20,}'               # Anthropic API keys
+  'sb_secret_[A-Za-z0-9_-]+'                # Supabase service role
+  'phc_[A-Za-z0-9]{40,}'                    # PostHog API keys
+  'sk_live_[A-Za-z0-9]{20,}'                # Stripe live secret
+  'rk_live_[A-Za-z0-9]{20,}'                # Stripe restricted live
+  'goog_[A-Za-z0-9_-]{20,}'                 # RevenueCat live Google key
+  'appl_[A-Za-z0-9_-]{20,}'                 # RevenueCat live Apple key
+  'ghp_[A-Za-z0-9]{36}'                     # GitHub personal access tokens
+  'eyJ[A-Za-z0-9_=-]+\.eyJ[A-Za-z0-9_=-]+\.[A-Za-z0-9_=-]+'  # JWTs
+)
+
+DENYLIST_FILES=(
+  '\.env$'
+  '\.env\.local$'
+  '\.env\.production$'
+  '^prompt(-.*)?\.txt$'
+  '^secrets\.md$'
+)
+
+for pattern in "${DENYLIST_FILES[@]}"; do
+  if git diff --cached --name-only | grep -E "$pattern" > /dev/null; then
+    echo "❌ Refusing to commit a file matching denylist pattern: $pattern"
+    echo "   Add it to .gitignore and run: git rm --cached <file>"
+    exit 1
+  fi
+done
+
+for pattern in "${PATTERNS[@]}"; do
+  if git diff --cached -U0 | grep -E "^\+" | grep -E "$pattern" > /dev/null; then
+    matches=$(git diff --cached -U0 | grep -E "^\+" | grep -E "$pattern" | head -3)
+    echo "❌ Possible secret detected in staged changes (pattern: $pattern):"
+    echo "$matches"
+    echo ""
+    echo "If this is a false positive, commit with:"
+    echo "   git commit --no-verify"
+    exit 1
+  fi
+done
+
+exit 0

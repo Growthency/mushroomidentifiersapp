@@ -1,17 +1,18 @@
 /**
- * Anthropic Claude client — vision-based mushroom identification + chat assistant.
+ * Anthropic client — vision-based mushroom identification + AI mycologist chat.
  *
- * SECURITY: in production, route requests through a Supabase Edge Function so
- * the API key never ships to the client. This file supports both modes via
- * `useDirect`. Default to direct calls only in dev.
+ * SECURITY: every call routes through a Supabase Edge Function so the
+ * Anthropic API key NEVER ships to the mobile bundle. Per-message credit
+ * accounting also happens server-side, atomically, via consume_credits RPC.
  */
-// Static import — keeps Hermes happy on Android dev clients & Expo Go.
-// Bundle size hit (~500KB) is acceptable; avoids dynamic-import resolution
-// quirks that intermittently break chat/scan on first use.
-import Anthropic from "@anthropic-ai/sdk";
-import { config } from "./config";
 
-export type IdentificationAngle = "cap" | "underside" | "stem" | "base" | "habitat" | "spore_print";
+export type IdentificationAngle =
+  | "cap"
+  | "underside"
+  | "stem"
+  | "base"
+  | "habitat"
+  | "spore_print";
 
 export type ScanInput = {
   images: { angle: IdentificationAngle; base64: string; mimeType?: string }[];
@@ -21,18 +22,19 @@ export type ScanInput = {
   isPremium?: boolean;
 };
 
-/** Pick model based on subscription tier — Haiku for free, Sonnet for paid. */
-function pickModel(isPremium: boolean | undefined): string {
-  return isPremium ? config.anthropic.modelPaid : config.anthropic.modelFree;
-}
-
 export type SpeciesCandidate = {
   rank: number;
   scientificName: string;
   commonNames: string[];
   family?: string;
   confidence: number; // 0–1
-  edibility: "edible" | "edible_with_caution" | "inedible" | "poisonous" | "deadly" | "unknown";
+  edibility:
+    | "edible"
+    | "edible_with_caution"
+    | "inedible"
+    | "poisonous"
+    | "deadly"
+    | "unknown";
   toxicityNotes?: string;
   keyFeatures: string[];
   distinguishingFromLookalikes?: string;
@@ -57,64 +59,11 @@ export type IdentificationResult = {
   rawNotes?: string;
 };
 
-const SYSTEM_PROMPT = `You are an expert mycologist assisting users of the MushroomIdentifiers app.
-You analyze multi-angle photographs of fungi (cap, underside, stem, base, habitat, spore print) and produce a structured identification report.
-
-Critical rules:
-1. NEVER tell a user a wild mushroom is safe to eat. Always include a "do not consume based on photo alone — confirm with a local expert" caveat for any edible candidate.
-2. If toxic or deadly lookalikes exist, name them explicitly and explain how to tell them apart.
-3. If the photo is ambiguous or insufficient, say so and request a specific additional angle (e.g. "please photograph the underside showing the gills").
-4. For each candidate provide: scientific name, common name(s), family, edibility class, key identifying features, and how it differs from common lookalikes.
-5. Rank candidates by likelihood. Top match must include a confidence score 0–1.
-6. Return ONLY a JSON object matching the schema given, no prose outside the JSON.
-
-Edibility classes: edible, edible_with_caution, inedible, poisonous, deadly, unknown.
-Safety verdicts: safe_to_handle, caution, do_not_consume, do_not_touch.`;
-
-const RESPONSE_SCHEMA = `{
-  "topMatch": {
-    "rank": 1,
-    "scientificName": "string",
-    "commonNames": ["string"],
-    "family": "string",
-    "confidence": 0.0,
-    "edibility": "edible|edible_with_caution|inedible|poisonous|deadly|unknown",
-    "toxicityNotes": "string",
-    "keyFeatures": ["string"],
-    "distinguishingFromLookalikes": "string",
-    "habitatMatch": "string"
-  },
-  "candidates": [ /* same shape, ranked 1..N */ ],
-  "lookalikes": [
-    {
-      "scientificName": "string",
-      "commonName": "string",
-      "edibility": "...",
-      "whyConfusable": "string"
-    }
-  ],
-  "safetyVerdict": "safe_to_handle|caution|do_not_consume|do_not_touch",
-  "emergencyAdvice": "string or null",
-  "sporePrintGuidance": "string or null",
-  "confidenceOverall": 0.0
-}`;
-
-function getClient(): Anthropic {
-  if (!config.anthropic.apiKey) {
-    throw new Error("Missing EXPO_PUBLIC_ANTHROPIC_API_KEY in .env");
-  }
-  return new Anthropic({
-    apiKey: config.anthropic.apiKey,
-    // Required for RN — disables Anthropic SDK's built-in browser warning
-    dangerouslyAllowBrowser: true,
-  });
-}
-
-/**
- * Server-routed call (recommended for production).
- * Hits a Supabase Edge Function that holds the Anthropic key server-side.
- */
-async function identifyViaEdgeFunction(input: ScanInput): Promise<IdentificationResult> {
+/** Vision-based mushroom identification — calls the identify-mushroom edge fn. */
+export async function identifyMushroom(
+  input: ScanInput,
+  _opts: { useDirect?: boolean } = {},
+): Promise<IdentificationResult> {
   const { supabase } = await import("./supabase");
   const { data, error } = await supabase.functions.invoke("identify-mushroom", {
     body: input,
@@ -123,99 +72,26 @@ async function identifyViaEdgeFunction(input: ScanInput): Promise<Identification
   return data as IdentificationResult;
 }
 
-/**
- * Direct client → Anthropic call (dev / quick prototyping only).
- */
-async function identifyDirect(input: ScanInput): Promise<IdentificationResult> {
-  const client = getClient();
-
-  const userContext = [
-    input.notes ? `User notes: ${input.notes}` : null,
-    input.habitat ? `Habitat: ${input.habitat}` : null,
-    input.location
-      ? `Location: lat ${input.location.lat.toFixed(4)}, lon ${input.location.lon.toFixed(4)}${
-          input.location.placeName ? ` (${input.location.placeName})` : ""
-        }`
-      : null,
-    `Images attached, in this order: ${input.images.map((i) => i.angle).join(", ")}.`,
-    `Return JSON matching this schema exactly: ${RESPONSE_SCHEMA}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  const response = await client.messages.create({
-    model: pickModel(input.isPremium),
-    max_tokens: 2048,
-    system: SYSTEM_PROMPT,
-    messages: [
-      {
-        role: "user",
-        content: [
-          ...input.images.map((img) => ({
-            type: "image" as const,
-            source: {
-              type: "base64" as const,
-              media_type: (img.mimeType ?? "image/jpeg") as "image/jpeg" | "image/png" | "image/webp" | "image/gif",
-              data: img.base64,
-            },
-          })),
-          { type: "text" as const, text: userContext },
-        ],
-      },
-    ],
-  });
-
-  const textBlock = response.content.find((b) => b.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    throw new Error("Anthropic returned no text block");
-  }
-  const jsonMatch = textBlock.text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error("Anthropic response did not contain JSON");
-  }
-  return JSON.parse(jsonMatch[0]) as IdentificationResult;
-}
-
-export async function identifyMushroom(
-  input: ScanInput,
-  opts: { useDirect?: boolean } = {},
-): Promise<IdentificationResult> {
-  const useDirect = opts.useDirect ?? __DEV__;
-  return useDirect ? identifyDirect(input) : identifyViaEdgeFunction(input);
-}
-
-/**
- * Chat with the AI mycologist assistant.
- *
- * Uses non-streaming `messages.create` because Anthropic's SDK stream
- * iterator depends on Fetch response.body iteration, which is unreliable
- * inside React Native's polyfilled fetch (bundler-dependent). We fake a
- * typewriter effect on the client by chunking the final text instead.
- */
+/** AI mycologist chat — calls the chat-mycologist edge fn. */
 export async function chatWithMycologist(
   messages: { role: "user" | "assistant"; content: string }[],
   opts: { isPremium?: boolean; onDelta?: (text: string) => void } = {},
 ): Promise<string> {
-  const client = getClient();
   const onDelta = opts.onDelta;
 
-  const response = await client.messages.create({
-    model: pickModel(opts.isPremium),
-    max_tokens: 1024,
-    system:
-      "You are a friendly expert mycologist for the Mushroom Identifiers app. Help users with foraging questions, mushroom biology, recipes, safety, and habitat tips. Always emphasize that no app should be the sole basis for consuming a wild mushroom — defer to local experts.",
-    messages,
+  const { supabase } = await import("./supabase");
+  const { data, error } = await supabase.functions.invoke("chat-mycologist", {
+    body: { messages },
   });
+  if (error) throw error;
 
-  const textBlock = response.content.find((b) => b.type === "text");
-  const final = textBlock && textBlock.type === "text" ? textBlock.text : "";
+  const final = (data as { text?: string } | null)?.text ?? "";
 
-  // Simulate typewriter for nice UX even though we got the full response in one shot.
+  // Client-side typewriter for nice UX (server returns full text in one shot).
   if (onDelta && final.length > 0) {
     const chunks = final.match(/.{1,6}/g) ?? [final];
     for (const chunk of chunks) {
       onDelta(chunk);
-      // tiny yield so React can render between chunks
       await new Promise((resolve) => setTimeout(resolve, 12));
     }
   }

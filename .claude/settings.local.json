@@ -56,7 +56,10 @@
       "Bash(git push *)",
       "Bash(npx tsc *)",
       "Bash(curl -sf -o /dev/null http://localhost:8082/)",
-      "Bash(taskkill //F //PID 17120)"
+      "Bash(taskkill //F //PID 17120)",
+      "Bash(git stash *)",
+      "Bash(chmod +x .githooks/pre-commit)",
+      "Bash(xargs grep *)"
     ]
   }
 }

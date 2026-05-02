@@ -44,10 +44,12 @@ export const config = {
     anonKey: required("EXPO_PUBLIC_SUPABASE_ANON_KEY"),
   },
 
+  // Anthropic key is SERVER-ONLY now. The client never holds it; calls route
+  // through Supabase Edge Functions. These fields stay for legacy reads.
   anthropic: {
-    apiKey: read("EXPO_PUBLIC_ANTHROPIC_API_KEY") ?? "",
-    modelFree: read("EXPO_PUBLIC_ANTHROPIC_MODEL_FREE") ?? "claude-haiku-4-5-20251001",
-    modelPaid: read("EXPO_PUBLIC_ANTHROPIC_MODEL_PAID") ?? "claude-sonnet-4-6",
+    apiKey: "",
+    modelFree: "claude-haiku-4-5-20251001",
+    modelPaid: "claude-sonnet-4-6",
   },
 
   revenuecat: {

@@ -37,11 +37,6 @@
       "package": "com.mushroomidentifiers.app",
       "versionCode": 1,
       "softwareKeyboardLayoutMode": "resize",
-      "config": {
-        "googleMaps": {
-          "apiKey": "AIzaSyB4J5msiA-_rLPevJ0Wmwj6dmSUjStIZuk"
-        }
-      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-chrome-512x512.png",
         "backgroundColor": "#0F1B0A"
