@@ -1,8 +1,14 @@
 import { Tabs } from "expo-router";
 import { Home, Camera, BookOpen, NotebookPen, User } from "lucide-react-native";
-import { View } from "react-native";
+import { View, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+  // Add the device's safe-area inset so the tab bar clears Android's gesture bar
+  // and iOS's home indicator. Falls back to a small default on devices without one.
+  const bottomPad = Math.max(insets.bottom, Platform.OS === "android" ? 12 : 8);
+
   return (
     <Tabs
       screenOptions={{
@@ -13,9 +19,9 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: "#fff",
           borderTopColor: "#DCE9D2",
-          height: 64,
+          height: 64 + bottomPad,
           paddingTop: 6,
-          paddingBottom: 8,
+          paddingBottom: bottomPad,
         },
       }}
     >

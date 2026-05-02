@@ -52,3 +52,30 @@ export async function getRegionalObservations(opts: {
     latestObservedAt: json.results[0]?.observed_on ?? null,
   };
 }
+
+/**
+ * Trending fungi taxa near a coordinate over the last N days.
+ * Uses iNaturalist's `species_counts` aggregation — fast, no auth.
+ */
+export type TrendingSpecies = {
+  taxon: INatTaxon;
+  count: number;
+};
+
+export async function getTrendingFungi(opts: {
+  lat: number;
+  lon: number;
+  radiusKm?: number;
+  days?: number;
+  limit?: number;
+}): Promise<TrendingSpecies[]> {
+  const { lat, lon, radiusKm = 100, days = 14, limit = 5 } = opts;
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const url = `${BASE}/observations/species_counts?iconic_taxa=Fungi&lat=${lat}&lng=${lon}&radius=${radiusKm}&d1=${since}&per_page=${limit}&order=desc`;
+  const r = await fetch(url);
+  if (!r.ok) return [];
+  const json = (await r.json()) as {
+    results: { count: number; taxon: INatTaxon }[];
+  };
+  return json.results.map((row) => ({ taxon: row.taxon, count: row.count }));
+}

@@ -1,13 +1,20 @@
+import { useEffect } from "react";
 import { View, Text, Pressable, Switch } from "react-native";
 import { router } from "expo-router";
-import { useState } from "react";
 import { ArrowLeft } from "lucide-react-native";
 import { Screen, Card } from "@/components/ui";
+import { usePreferences } from "@/stores/preferencesStore";
 
 export default function NotificationsSettings() {
-  const [foragingAlerts, setForagingAlerts] = useState(true);
-  const [seasonReminders, setSeasonReminders] = useState(true);
-  const [communityReplies, setCommunityReplies] = useState(false);
+  const hydrate = usePreferences((s) => s.hydrate);
+  const foragingAlerts = usePreferences((s) => s.foragingAlertsEnabled);
+  const seasonal = usePreferences((s) => s.seasonalRemindersEnabled);
+  const community = usePreferences((s) => s.communityRepliesEnabled);
+  const setPref = usePreferences((s) => s.set);
+
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
 
   return (
     <Screen>
@@ -23,21 +30,21 @@ export default function NotificationsSettings() {
           label="Foraging condition alerts"
           hint="When weather looks great in your area"
           value={foragingAlerts}
-          onChange={setForagingAlerts}
+          onChange={(v) => setPref("foragingAlertsEnabled", v)}
         />
         <View className="my-2 h-px bg-forest-100" />
         <Toggle
           label="Seasonal reminders"
           hint="Heads-up when species you've found come back into season"
-          value={seasonReminders}
-          onChange={setSeasonReminders}
+          value={seasonal}
+          onChange={(v) => setPref("seasonalRemindersEnabled", v)}
         />
         <View className="my-2 h-px bg-forest-100" />
         <Toggle
           label="Community replies"
           hint="When someone replies to your shared finds"
-          value={communityReplies}
-          onChange={setCommunityReplies}
+          value={community}
+          onChange={(v) => setPref("communityRepliesEnabled", v)}
         />
       </Card>
     </Screen>
@@ -61,7 +68,11 @@ function Toggle({
         <Text className="text-base text-forest-900">{label}</Text>
         {hint ? <Text className="text-xs text-forest-600">{hint}</Text> : null}
       </View>
-      <Switch value={value} onValueChange={onChange} trackColor={{ true: "#4A7C2A", false: "#E5E7EB" }} />
+      <Switch
+        value={value}
+        onValueChange={onChange}
+        trackColor={{ true: "#4A7C2A", false: "#E5E7EB" }}
+      />
     </View>
   );
 }

@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { View, Text, Pressable, FlatList, Image, RefreshControl } from "react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Search } from "lucide-react-native";
 import { useQuery } from "@tanstack/react-query";
 import { Screen, Input, EdibilityBadge, Card } from "@/components/ui";
@@ -17,8 +17,18 @@ const FILTERS = [
 ] as const;
 
 export default function Library() {
+  const params = useLocalSearchParams<{ filter?: string }>();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["id"]>("all");
+
+  // Honor `?filter=poisonous` etc. on initial mount (from quick actions on home)
+  useEffect(() => {
+    const incoming = params.filter;
+    const valid = FILTERS.map((f) => f.id) as readonly string[];
+    if (incoming && valid.includes(incoming)) {
+      setFilter(incoming as (typeof FILTERS)[number]["id"]);
+    }
+  }, [params.filter]);
 
   const local = useQuery({
     queryKey: ["mushrooms", filter],

@@ -29,7 +29,29 @@
       "Read(//tmp/**)",
       "Bash(taskkill //F //PID 11192)",
       "Bash(curl -s -o /tmp/b9.txt -w \"BUNDLE %{http_code} size:%{size_download}\\\\n\" \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable\")",
-      "Bash(curl -s -o /tmp/b10.txt -w \"BUNDLE %{http_code} size:%{size_download}\\\\n\" \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable\")"
+      "Bash(curl -s -o /tmp/b10.txt -w \"BUNDLE %{http_code} size:%{size_download}\\\\n\" \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable\")",
+      "Bash(start \"\" \"C:\\\\Users\\\\User\\\\Desktop\\\\MushroomID\\\\qr-scan.html\")",
+      "Bash(awk '{print $5}')",
+      "Bash(taskkill //F //PID 3896)",
+      "Bash(yes \"\")",
+      "Bash(npx eas-cli@latest init --id auto --non-interactive)",
+      "Bash(npx eas-cli@latest project:init --non-interactive)",
+      "Bash(npx eas-cli@latest project:init --force --non-interactive)",
+      "Bash(yes y *)",
+      "Bash(npx eas-cli@latest env:push --environment preview .env --non-interactive)",
+      "Bash(yes \"y\")",
+      "Bash(npx eas-cli@latest env:push --environment preview .env)",
+      "Bash(npx eas-cli@latest env:push --help)",
+      "Bash(npx eas-cli@latest env:push preview --path .env)",
+      "Bash(rm -f .env.local)",
+      "Bash(npx eas-cli@latest build --profile preview --platform android --non-interactive)",
+      "Bash(ipconfig)",
+      "Bash(npx eas-cli@latest build:view 8df056b4-a313-4d5c-ba88-5d266f3651d6)",
+      "Bash(npx eas-cli@latest build --profile preview --platform android --non-interactive --no-wait)",
+      "Bash(npx eas-cli@latest build:view 0241109d-9cb4-4dae-bbae-9107020f4e7a)",
+      "Bash(git check-ignore *)",
+      "Bash(git config *)",
+      "Bash(git add *)"
     ]
   }
 }

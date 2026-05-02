@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "MushroomIdentifiers",
+    "name": "Mushroom Identifiers",
     "slug": "mushroom-identifiers",
     "scheme": "mushroomid",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/android-chrome-512x512.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/android-chrome-512x512.png",
       "resizeMode": "contain",
@@ -36,6 +36,11 @@
     "android": {
       "package": "com.mushroomidentifiers.app",
       "versionCode": 1,
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyB4J5msiA-_rLPevJ0Wmwj6dmSUjStIZuk"
+        }
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-chrome-512x512.png",
         "backgroundColor": "#0F1B0A"
@@ -196,16 +201,16 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/REPLACE_WITH_EAS_PROJECT_ID"
+      "url": "https://u.expo.dev/d0eaaf50-8044-4c20-95c3-8c7f52f3252c"
     },
     "extra": {
       "router": {
         "origin": false
       },
       "eas": {
-        "projectId": "auto"
+        "projectId": "d0eaaf50-8044-4c20-95c3-8c7f52f3252c"
       }
     },
-    "owner": "your-expo-account"
+    "owner": "ninjamul"
   }
 }

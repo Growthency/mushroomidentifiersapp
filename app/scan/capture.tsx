@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { View, Text, Pressable, Alert, Image } from "react-native";
+import { useState, useRef, useEffect } from "react";
+import { View, Text, Pressable, Alert, Image, BackHandler } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
@@ -34,10 +34,29 @@ export default function Capture() {
   const angle = ANGLE_FLOW[step];
   const isOptional = step >= 4;
 
+  // Override hardware back on Android — show discard confirm instead of broken router.back
+  useEffect(() => {
+    const onBack = () => {
+      close();
+      return true; // intercept default back behavior
+    };
+    const sub = BackHandler.addEventListener("hardwareBackPress", onBack);
+    return () => sub.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const close = () => {
     Alert.alert("Discard scan?", "Your captured photos will be lost.", [
       { text: "Continue", style: "cancel" },
-      { text: "Discard", style: "destructive", onPress: () => { reset(); router.back(); } },
+      {
+        text: "Discard",
+        style: "destructive",
+        onPress: () => {
+          reset();
+          // Always land on Home tab — scan flow is modal-style, no reliable back-stack.
+          router.replace("/(tabs)/home");
+        },
+      },
     ]);
   };
 
@@ -114,7 +133,7 @@ export default function Capture() {
           We use your camera to capture mushroom photos for AI identification.
         </Text>
         <Button onPress={requestPermission}>Grant access</Button>
-        <Pressable onPress={() => router.back()} className="mt-4">
+        <Pressable onPress={() => router.replace("/(tabs)/home")} className="mt-4">
           <Text className="text-forest-300">Cancel</Text>
         </Pressable>
       </View>

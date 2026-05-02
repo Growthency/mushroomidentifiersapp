@@ -1,7 +1,8 @@
-import { View, Text, Pressable, Linking, Platform } from "react-native";
+import { View, Text, Pressable, Linking, Platform, ScrollView } from "react-native";
 import { router } from "expo-router";
 import { Phone, ExternalLink, X } from "lucide-react-native";
-import { Screen, Card, Button } from "@/components/ui";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Card, Button } from "@/components/ui";
 
 const HOTLINES: { country: string; name: string; phone: string; url?: string }[] = [
   { country: "United States", name: "Poison Help Line", phone: "1-800-222-1222", url: "https://www.poisonhelp.org" },
@@ -14,9 +15,10 @@ const HOTLINES: { country: string; name: string; phone: string; url?: string }[]
 ];
 
 export default function Emergency() {
+  const insets = useSafeAreaInsets();
   return (
     <View className="flex-1 bg-toxic-700">
-      <View className="px-5 pt-14">
+      <View className="px-5" style={{ paddingTop: Math.max(insets.top, 16) + 16 }}>
         <View className="flex-row items-center justify-between">
           <Text className="font-display text-2xl font-bold text-white">Emergency</Text>
           <Pressable onPress={() => router.back()} className="h-10 w-10 items-center justify-center rounded-full bg-black/20">
@@ -28,7 +30,11 @@ export default function Emergency() {
         </Text>
       </View>
 
-      <View className="flex-1 mt-5 rounded-t-3xl bg-forest-50 p-5">
+      <ScrollView
+        className="flex-1 mt-5 rounded-t-3xl bg-forest-50"
+        contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+      >
         <Card className="border-toxic-200">
           <Text className="font-bold text-toxic-700">Immediate steps</Text>
           <View className="mt-2 gap-1">
@@ -70,7 +76,7 @@ export default function Emergency() {
         >
           WHO mushroom toxin reference
         </Button>
-      </View>
+      </ScrollView>
     </View>
   );
 }

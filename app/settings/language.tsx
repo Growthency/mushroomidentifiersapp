@@ -1,8 +1,11 @@
+import { useEffect } from "react";
 import { View, Text, Pressable } from "react-native";
 import { router } from "expo-router";
-import { useState } from "react";
 import { ArrowLeft, Check } from "lucide-react-native";
 import { Screen, Card } from "@/components/ui";
+import { usePreferences } from "@/stores/preferencesStore";
+import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/stores/authStore";
 
 const LANGS = [
   { code: "en", label: "English" },
@@ -20,7 +23,23 @@ const LANGS = [
 ];
 
 export default function Language() {
-  const [selected, setSelected] = useState("en");
+  const hydrate = usePreferences((s) => s.hydrate);
+  const language = usePreferences((s) => s.language);
+  const setPref = usePreferences((s) => s.set);
+  const userId = useAuthStore((s) => s.user?.id);
+
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
+
+  const choose = async (code: string) => {
+    await setPref("language", code);
+    if (userId) {
+      // Persist to profile so AI prompts can localize per user
+      await supabase.from("profiles").update({ locale: code }).eq("id", userId);
+    }
+  };
+
   return (
     <Screen>
       <Pressable onPress={() => router.back()} className="mb-4 mt-2 flex-row items-center gap-1">
@@ -38,11 +57,11 @@ export default function Language() {
           <View key={l.code}>
             {i > 0 && <View className="my-1 h-px bg-forest-100" />}
             <Pressable
-              onPress={() => setSelected(l.code)}
+              onPress={() => choose(l.code)}
               className="flex-row items-center justify-between py-2.5"
             >
               <Text className="text-base text-forest-900">{l.label}</Text>
-              {selected === l.code && <Check size={18} color="#4A7C2A" />}
+              {language === l.code && <Check size={18} color="#4A7C2A" />}
             </Pressable>
           </View>
         ))}

@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, Alert } from "react-native";
+import { View, Text, ScrollView, Pressable, Alert, BackHandler } from "react-native";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -22,6 +22,7 @@ import { supabase } from "@/lib/supabase";
 import { uploadScanImage } from "@/lib/storage";
 import { edibilityColor } from "@/lib/utils";
 import { showInterstitial } from "@/lib/ads";
+import { evaluateAchievements } from "@/lib/achievements";
 import { useEffect } from "react";
 
 export default function Result() {
@@ -43,6 +44,17 @@ export default function Result() {
     }, 1500);
     return () => clearTimeout(t);
   }, [isPremium]);
+
+  // Hardware back → go to home (result is a terminal screen)
+  useEffect(() => {
+    const onBack = () => {
+      reset();
+      router.replace("/(tabs)/home");
+      return true;
+    };
+    const sub = BackHandler.addEventListener("hardwareBackPress", onBack);
+    return () => sub.remove();
+  }, [reset]);
 
   if (!result) {
     return (
@@ -108,6 +120,8 @@ export default function Result() {
       );
 
       Alert.alert("Saved", "Scan added to your journal.");
+      // Re-evaluate badges in background — auto-unlocks any newly-met achievements
+      evaluateAchievements(userId).catch(() => {});
     } catch (e) {
       Alert.alert("Save failed", (e as Error).message);
     } finally {

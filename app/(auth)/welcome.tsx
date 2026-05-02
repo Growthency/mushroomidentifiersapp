@@ -13,7 +13,9 @@ export default function Welcome() {
           <View className="h-24 w-24 items-center justify-center rounded-3xl bg-forest-700">
             <Text className="text-5xl">🍄</Text>
           </View>
-          <Text className="font-display text-3xl font-bold text-forest-900">MushroomIdentifiers</Text>
+          <Text className="font-display text-3xl font-bold text-forest-900">
+            Mushroom Identifiers
+          </Text>
           <Text className="text-center text-base text-forest-700">
             AI-powered mushroom ID · 10,000+ species · trusted by foragers worldwide
           </Text>

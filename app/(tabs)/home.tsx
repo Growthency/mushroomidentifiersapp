@@ -11,28 +11,43 @@ import {
   Trophy,
   TrendingUp,
 } from "lucide-react-native";
+import { useQuery } from "@tanstack/react-query";
+import { Image } from "expo-image";
 import { Card, Screen, Button, Badge } from "@/components/ui";
 import { AdBanner } from "@/components/ads/BannerAd";
 import { RewardedAdButton } from "@/components/ads/RewardedAdButton";
 import { useAuthStore } from "@/stores/authStore";
 import { useCredits } from "@/hooks/useCredits";
 import { getForagingForecast, type ForagingForecast } from "@/lib/weather";
+import { getTrendingFungi } from "@/lib/inaturalist";
 import { config } from "@/lib/config";
 
 export default function Home() {
   const user = useAuthStore((s) => s.user);
   const { data: credits } = useCredits();
   const [forecast, setForecast] = useState<ForagingForecast | null>(null);
+  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
 
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") return;
       const loc = await Location.getCurrentPositionAsync({});
-      const f = await getForagingForecast(loc.coords.latitude, loc.coords.longitude).catch(() => null);
+      const c = { lat: loc.coords.latitude, lon: loc.coords.longitude };
+      setCoords(c);
+      const f = await getForagingForecast(c.lat, c.lon).catch(() => null);
       setForecast(f);
     })();
   }, []);
+
+  // Real trending data from iNaturalist — top 3 fungi spotted near user in last 14 days.
+  const trending = useQuery({
+    queryKey: ["trending", coords?.lat?.toFixed(2), coords?.lon?.toFixed(2)],
+    queryFn: () =>
+      coords ? getTrendingFungi({ lat: coords.lat, lon: coords.lon, limit: 3 }) : Promise.resolve([]),
+    enabled: !!coords,
+    staleTime: 30 * 60_000, // 30 min
+  });
 
   const greeting = (() => {
     const h = new Date().getHours();
@@ -118,7 +133,7 @@ export default function Home() {
             label="Lookalike check"
             icon={<ShieldAlert size={20} color="#fff" />}
             color="#D2691E"
-            onPress={() => router.push("/(tabs)/library?filter=lookalikes")}
+            onPress={() => router.push("/(tabs)/library?filter=poisonous")}
           />
           <QuickAction
             label="Achievements"
@@ -129,21 +144,63 @@ export default function Home() {
         </View>
       </ScrollView>
 
-      {/* Trending */}
+      {/* Trending — real iNaturalist data, recent fungi observations near user */}
       <View className="mt-6 flex-row items-center gap-2">
         <TrendingUp size={16} color="#4A7C2A" />
         <Text className="text-sm font-bold uppercase tracking-wider text-forest-600">
           Trending in your region
         </Text>
       </View>
-      <Card className="mt-2">
-        <Text className="font-semibold text-forest-900">Cantharellus cibarius</Text>
-        <Text className="text-sm text-forest-700">Golden Chanterelle · 142 sightings this week</Text>
-        <View className="mt-2 flex-row gap-2">
-          <Badge label="Edible" tone="edible" />
-          <Badge label="In season" tone="info" />
-        </View>
-      </Card>
+
+      {!coords && (
+        <Card className="mt-2">
+          <Text className="text-sm text-forest-700">
+            Enable location to see what's fruiting near you.
+          </Text>
+        </Card>
+      )}
+
+      {coords && trending.isLoading && (
+        <Card className="mt-2">
+          <Text className="text-sm text-forest-700">Loading trending species…</Text>
+        </Card>
+      )}
+
+      {coords && !trending.isLoading && (trending.data ?? []).length === 0 && (
+        <Card className="mt-2">
+          <Text className="font-semibold text-forest-900">Quiet around here</Text>
+          <Text className="text-sm text-forest-700">
+            No recent fungi observations within 100 km. Try expanding your foraging radius or check
+            back after the next rain.
+          </Text>
+        </Card>
+      )}
+
+      {(trending.data ?? []).map((row) => (
+        <Pressable key={row.taxon.id} onPress={() => router.push(`/mushroom/inat-${row.taxon.id}`)}>
+          <Card className="mt-2 flex-row items-center gap-3">
+            {row.taxon.default_photo?.square_url ? (
+              <Image
+                source={{ uri: row.taxon.default_photo.square_url }}
+                style={{ width: 48, height: 48, borderRadius: 8 }}
+              />
+            ) : (
+              <View className="h-12 w-12 items-center justify-center rounded-lg bg-forest-100">
+                <Text className="text-xl">🍄</Text>
+              </View>
+            )}
+            <View className="flex-1">
+              <Text className="font-semibold text-forest-900" numberOfLines={1}>
+                {row.taxon.preferred_common_name ?? row.taxon.name}
+              </Text>
+              <Text className="text-xs italic text-forest-700">{row.taxon.name}</Text>
+              <Text className="mt-0.5 text-xs text-forest-600">
+                {row.count} sightings · last 14 days
+              </Text>
+            </View>
+          </Card>
+        </Pressable>
+      ))}
 
       <Button variant="secondary" className="mt-6" onPress={() => router.push("/(tabs)/library")}>
         Explore the encyclopedia

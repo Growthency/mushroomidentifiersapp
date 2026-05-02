@@ -5,17 +5,11 @@
  * the API key never ships to the client. This file supports both modes via
  * `useDirect`. Default to direct calls only in dev.
  */
-// Anthropic SDK is ~500KB minified — lazy load only when scan/chat actually happens.
-import type Anthropic from "@anthropic-ai/sdk";
+// Static import — keeps Hermes happy on Android dev clients & Expo Go.
+// Bundle size hit (~500KB) is acceptable; avoids dynamic-import resolution
+// quirks that intermittently break chat/scan on first use.
+import Anthropic from "@anthropic-ai/sdk";
 import { config } from "./config";
-
-let _Anthropic: typeof Anthropic | null = null;
-async function loadAnthropic() {
-  if (_Anthropic) return _Anthropic;
-  const mod = await import("@anthropic-ai/sdk");
-  _Anthropic = mod.default;
-  return _Anthropic;
-}
 
 export type IdentificationAngle = "cap" | "underside" | "stem" | "base" | "habitat" | "spore_print";
 
@@ -105,12 +99,11 @@ const RESPONSE_SCHEMA = `{
   "confidenceOverall": 0.0
 }`;
 
-async function getClient(): Promise<Anthropic> {
+function getClient(): Anthropic {
   if (!config.anthropic.apiKey) {
     throw new Error("Missing EXPO_PUBLIC_ANTHROPIC_API_KEY in .env");
   }
-  const Cls = await loadAnthropic();
-  return new Cls({
+  return new Anthropic({
     apiKey: config.anthropic.apiKey,
     // Required for RN — disables Anthropic SDK's built-in browser warning
     dangerouslyAllowBrowser: true,
@@ -134,7 +127,7 @@ async function identifyViaEdgeFunction(input: ScanInput): Promise<Identification
  * Direct client → Anthropic call (dev / quick prototyping only).
  */
 async function identifyDirect(input: ScanInput): Promise<IdentificationResult> {
-  const client = await getClient();
+  const client = getClient();
 
   const userContext = [
     input.notes ? `User notes: ${input.notes}` : null,
@@ -192,27 +185,38 @@ export async function identifyMushroom(
 }
 
 /**
- * Streaming chat with the AI mycologist assistant.
+ * Chat with the AI mycologist assistant.
+ *
+ * Uses non-streaming `messages.create` because Anthropic's SDK stream
+ * iterator depends on Fetch response.body iteration, which is unreliable
+ * inside React Native's polyfilled fetch (bundler-dependent). We fake a
+ * typewriter effect on the client by chunking the final text instead.
  */
 export async function chatWithMycologist(
   messages: { role: "user" | "assistant"; content: string }[],
   opts: { isPremium?: boolean; onDelta?: (text: string) => void } = {},
 ): Promise<string> {
-  const client = await getClient();
+  const client = getClient();
   const onDelta = opts.onDelta;
-  let final = "";
-  const stream = client.messages.stream({
+
+  const response = await client.messages.create({
     model: pickModel(opts.isPremium),
     max_tokens: 1024,
     system:
-      "You are a friendly expert mycologist for the MushroomIdentifiers app. Help users with foraging questions, mushroom biology, recipes, safety, and habitat tips. Always emphasize that no app should be the sole basis for consuming a wild mushroom — defer to local experts.",
+      "You are a friendly expert mycologist for the Mushroom Identifiers app. Help users with foraging questions, mushroom biology, recipes, safety, and habitat tips. Always emphasize that no app should be the sole basis for consuming a wild mushroom — defer to local experts.",
     messages,
   });
 
-  for await (const event of stream) {
-    if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-      final += event.delta.text;
-      onDelta?.(event.delta.text);
+  const textBlock = response.content.find((b) => b.type === "text");
+  const final = textBlock && textBlock.type === "text" ? textBlock.text : "";
+
+  // Simulate typewriter for nice UX even though we got the full response in one shot.
+  if (onDelta && final.length > 0) {
+    const chunks = final.match(/.{1,6}/g) ?? [final];
+    for (const chunk of chunks) {
+      onDelta(chunk);
+      // tiny yield so React can render between chunks
+      await new Promise((resolve) => setTimeout(resolve, 12));
     }
   }
 

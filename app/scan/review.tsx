@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { View, Text, Image, ScrollView, Pressable } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, Image, ScrollView, Pressable, BackHandler } from "react-native";
 import { router } from "expo-router";
 import Toast from "react-native-toast-message";
 import * as Haptics from "expo-haptics";
@@ -28,6 +28,16 @@ export default function Review() {
   const isPremium = useSubscriptionStore((s) => s.isPremium);
   const { data: credits } = useCredits();
   const [submitting, setSubmitting] = useState(false);
+
+  // Hardware back → go back to capture (most common intent: take more photos)
+  useEffect(() => {
+    const onBack = () => {
+      router.replace("/scan/capture");
+      return true;
+    };
+    const sub = BackHandler.addEventListener("hardwareBackPress", onBack);
+    return () => sub.remove();
+  }, []);
 
   const submit = async () => {
     if (images.length === 0) {
@@ -96,7 +106,7 @@ export default function Review() {
             </View>
           ))}
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => router.replace("/scan/capture")}
             className="h-[110px] w-[110px] items-center justify-center rounded-xl border-2 border-dashed border-forest-300 bg-white"
           >
             <Plus size={20} color="#4A7C2A" />

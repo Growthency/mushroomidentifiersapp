@@ -124,6 +124,7 @@ export const config = {
 
   credits: {
     perIdentification: int("EXPO_PUBLIC_CREDITS_PER_IDENTIFICATION", 10),
+    perChatMessage: int("EXPO_PUBLIC_CREDITS_PER_CHAT_MESSAGE", 5),
     freeLifetime: int("EXPO_PUBLIC_FREE_LIFETIME_CREDITS", 30),
     starterMonthly: int("EXPO_PUBLIC_STARTER_MONTHLY_CREDITS", 120),
     explorerMonthly: int("EXPO_PUBLIC_EXPLORER_MONTHLY_CREDITS", 550),
