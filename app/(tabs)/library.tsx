@@ -78,32 +78,38 @@ export default function Library() {
         />
       </View>
 
-      {/* Filter pills — wrapped in ScrollView with fixed height to prevent
-          Android list-in-list clipping that was hiding the pills earlier. */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={{ maxHeight: 56, marginVertical: 8 }}
-        contentContainerStyle={{ alignItems: "center", gap: 8, paddingVertical: 6 }}
-      >
-        {FILTERS.map((item) => (
-          <Pressable
-            key={item.id}
-            onPress={() => setFilter(item.id)}
-            className={`rounded-full px-4 py-2 ${
-              filter === item.id ? "bg-forest-700" : "bg-white"
-            }`}
-          >
-            <Text
-              className={`text-sm font-semibold ${
-                filter === item.id ? "text-white" : "text-forest-700"
+      {/* Filter pills — fixed-height wrapper so the pills always render at full
+          size on Android (parent ScrollView in Screen was clipping them). */}
+      <View style={{ height: 60, marginVertical: 8 }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 2,
+            gap: 8,
+            alignItems: "center",
+          }}
+        >
+          {FILTERS.map((item) => (
+            <Pressable
+              key={item.id}
+              onPress={() => setFilter(item.id)}
+              className={`rounded-full px-5 ${
+                filter === item.id ? "bg-forest-700" : "bg-white border border-forest-100"
               }`}
+              style={{ height: 40, justifyContent: "center" }}
             >
-              {item.label}
-            </Text>
-          </Pressable>
-        ))}
-      </ScrollView>
+              <Text
+                className={`text-sm font-semibold ${
+                  filter === item.id ? "text-white" : "text-forest-700"
+                }`}
+              >
+                {item.label}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
 
       <FlatList
         data={items}
@@ -152,7 +158,12 @@ function taxonToMushroom(t: INatTaxon): Mushroom {
  */
 function MushroomRow({ item }: { item: Mushroom }) {
   const inatId = item.inaturalist_taxon_id ?? null;
-  const { data: fetchedPhoto } = useTaxonPhoto(item.photos[0] ? null : inatId);
+  // Pass scientific name so the hook falls back to a name search when the
+  // hard-coded taxon id either doesn't exist or has no default photo.
+  const { data: fetchedPhoto } = useTaxonPhoto(
+    item.photos[0] ? null : inatId,
+    item.photos[0] ? null : item.scientific_name,
+  );
   const uri = item.photos[0] ?? fetchedPhoto ?? null;
 
   return (

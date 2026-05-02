@@ -54,7 +54,9 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(curl -sf -o /dev/null http://localhost:8082/)",
+      "Bash(taskkill //F //PID 17120)"
     ]
   }
 }
