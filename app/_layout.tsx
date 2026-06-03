@@ -11,9 +11,8 @@ import { StatusBar } from "expo-status-bar";
 import Toast from "react-native-toast-message";
 
 import { useAuthStore } from "@/stores/authStore";
-import { initAds } from "@/lib/ads";
-import { initPostHog } from "@/lib/posthog";
 import { AppSplash } from "@/components/AppSplash";
+import { RootErrorBoundary } from "@/components/RootErrorBoundary";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -31,32 +30,49 @@ export default function RootLayout() {
   const init = useAuthStore((s) => s.init);
   const loading = useAuthStore((s) => s.loading);
 
-  // Keep the in-app gradient splash up for a brief minimum even after auth
-  // resolves, so it doesn't flash on fast loads. Hides as soon as both
-  // (1) auth init finished AND (2) at least 600ms have elapsed.
   const [minDelayDone, setMinDelayDone] = useState(false);
 
   useEffect(() => {
-    // Hand off as soon as React mounts — the native splash hides and our
-    // own gradient AppSplash takes over immediately, so the user never sees
-    // a colour jump.
+    // Native splash → our AppSplash overlay handoff. Hide the native splash
+    // immediately so we control timing from here.
     SplashScreen.hideAsync().catch(() => {});
 
+    // Auth init (already has a 4-sec internal timeout in authStore).
     init().catch(() => {
-      // Even if init throws, never leave the UI blocked.
       useAuthStore.setState((s) => (s.loading ? { loading: false } : {}));
     });
-    initAds().catch(() => {});
-    initPostHog().catch(() => {});
 
-    const minDelay = setTimeout(() => setMinDelayDone(true), 600);
+    // Side-effect SDK inits are deferred and lazy-required. If any of them
+    // throw at IMPORT time, that crash now happens INSIDE this effect (where
+    // RootErrorBoundary can't catch it but we can swallow it). Previously
+    // they were imported at the top of this file — a synchronous import-time
+    // crash there would kill the bundle entry before any error boundary
+    // could mount, producing the silent blank-white screen.
+    (async () => {
+      try {
+        const ads = await import("@/lib/ads");
+        await ads.initAds();
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn("[ads init failed]", e);
+      }
+    })();
+    (async () => {
+      try {
+        const ph = await import("@/lib/posthog");
+        await ph.initPostHog();
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn("[posthog init failed]", e);
+      }
+    })();
 
-    // Absolute safety net — if every other guard somehow fails, never let
-    // the splash linger past 6s.
+    const minDelay = setTimeout(() => setMinDelayDone(true), 400);
+    // Absolute safety net — never leave the in-app splash up past 5s.
     const safety = setTimeout(() => {
       useAuthStore.setState((s) => (s.loading ? { loading: false } : {}));
       setMinDelayDone(true);
-    }, 6000);
+    }, 5000);
 
     return () => {
       clearTimeout(minDelay);
@@ -67,27 +83,27 @@ export default function RootLayout() {
   const splashVisible = loading || !minDelayDone;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <QueryClientProvider client={queryClient}>
-        <StatusBar style="auto" />
-        {/* Always render the navigator behind the splash so React can
-            warm up routes/hooks while the splash is visible. */}
-        <View style={{ flex: 1 }}>
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#F1F6ED" } }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" options={{ animation: "fade" }} />
-            <Stack.Screen name="(tabs)" options={{ animation: "fade" }} />
-            <Stack.Screen name="scan" options={{ presentation: "modal" }} />
-            <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
-            <Stack.Screen name="mushroom/[id]" />
-            <Stack.Screen name="blog/index" />
-            <Stack.Screen name="blog/[slug]" />
-            <Stack.Screen name="chat" options={{ presentation: "modal" }} />
-          </Stack>
-          <AppSplash visible={splashVisible} />
-        </View>
-        <Toast />
-      </QueryClientProvider>
-    </GestureHandlerRootView>
+    <RootErrorBoundary>
+      <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#F1F6ED" }}>
+        <QueryClientProvider client={queryClient}>
+          <StatusBar style="auto" />
+          <View style={{ flex: 1, backgroundColor: "#F1F6ED" }}>
+            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#F1F6ED" } }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" options={{ animation: "fade" }} />
+              <Stack.Screen name="(tabs)" options={{ animation: "fade" }} />
+              <Stack.Screen name="scan" options={{ presentation: "modal" }} />
+              <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
+              <Stack.Screen name="mushroom/[id]" />
+              <Stack.Screen name="blog/index" />
+              <Stack.Screen name="blog/[slug]" />
+              <Stack.Screen name="chat" options={{ presentation: "modal" }} />
+            </Stack>
+            <AppSplash visible={splashVisible} />
+          </View>
+          <Toast />
+        </QueryClientProvider>
+      </GestureHandlerRootView>
+    </RootErrorBoundary>
   );
 }
