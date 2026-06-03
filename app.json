@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/android-chrome-512x512.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/android-chrome-512x512.png",
       "resizeMode": "contain",

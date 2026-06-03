@@ -116,7 +116,9 @@
       "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\);process.stdin.on\\('end',\\(\\)=>{const b=JSON.parse\\(s\\);console.log\\('status:', b.status, '\\\\\\\\nartifact:', b.artifacts?.applicationArchiveUrl ?? 'none'\\)}\\)\")",
       "Bash(mkdir -p .backups)",
       "Bash(git mv *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(eas build:view f215f640-4214-4fc7-b84b-78dd4e71c703 --json)",
+      "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\);process.stdin.on\\('end',\\(\\)=>{const b=JSON.parse\\(s\\);console.log\\('status:', b.status, '\\\\\\\\nartifact:', b.artifacts?.applicationArchiveUrl ?? 'none', '\\\\\\\\nupdated:', b.updatedAt\\)}\\)\")"
     ]
   }
 }
