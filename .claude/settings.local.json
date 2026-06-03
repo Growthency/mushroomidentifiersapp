@@ -111,7 +111,9 @@
       "Bash(eas build:cancel f89989a3-3278-4a69-b7f6-a58d246d9e9f --non-interactive)",
       "Bash(eas build:view 2825887b-585b-4fe1-af88-fcd6546c65e6 --json)",
       "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\);process.stdin.on\\('end',\\(\\)=>{const b=JSON.parse\\(s\\);console.log\\('status:', b.status, '\\\\\\\\nartifact:', b.artifacts?.applicationArchiveUrl ?? 'none', '\\\\\\\\nerror:', b.error?.message ?? 'none'\\)}\\)\")",
-      "Bash(curl -s -o /dev/null -w \"%{http_code} time=%{time_total}s\\\\n\" \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&lazy=true\" --max-time 90)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code} time=%{time_total}s\\\\n\" \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&lazy=true\" --max-time 90)",
+      "Bash(eas build:view 5b684d43-d476-455f-b2e2-1dbdeb0c943c --json)",
+      "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\);process.stdin.on\\('end',\\(\\)=>{const b=JSON.parse\\(s\\);console.log\\('status:', b.status, '\\\\\\\\nartifact:', b.artifacts?.applicationArchiveUrl ?? 'none'\\)}\\)\")"
     ]
   }
 }
