@@ -12,6 +12,10 @@ const WEB_BLOCKED_MODULES = new Set([
   "react-native-maps",
   "react-native-google-mobile-ads",
   "react-native-purchases",
+  // WebView ships a usable web build in newer versions, but our blog detail
+  // screen has a dedicated `.web.tsx` variant that uses an <iframe>/dangerous-
+  // SetInnerHTML, so we never need the native module on the web bundle.
+  "react-native-webview",
 ]);
 
 const originalResolveRequest = config.resolver.resolveRequest;

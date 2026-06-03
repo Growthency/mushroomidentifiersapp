@@ -52,6 +52,8 @@ export default function RootLayout() {
           <Stack.Screen name="scan" options={{ presentation: "modal" }} />
           <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
           <Stack.Screen name="mushroom/[id]" />
+          <Stack.Screen name="blog/index" />
+          <Stack.Screen name="blog/[slug]" />
           <Stack.Screen name="chat" options={{ presentation: "modal" }} />
         </Stack>
         <Toast />

@@ -10,6 +10,9 @@ import {
   MessageCircle,
   Trophy,
   TrendingUp,
+  BookOpen,
+  Clock,
+  ArrowRight,
 } from "lucide-react-native";
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
@@ -20,6 +23,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useCredits } from "@/hooks/useCredits";
 import { getForagingForecast, type ForagingForecast } from "@/lib/weather";
 import { getTrendingFungi } from "@/lib/inaturalist";
+import { fetchLatestPosts } from "@/lib/blog";
 import { config } from "@/lib/config";
 
 export default function Home() {
@@ -47,6 +51,13 @@ export default function Home() {
       coords ? getTrendingFungi({ lat: coords.lat, lon: coords.lon, limit: 20 }) : Promise.resolve([]),
     enabled: !!coords,
     staleTime: 30 * 60_000, // 30 min
+  });
+
+  // Latest 3 blog posts — same DB as the website, so new content auto-appears.
+  const blog = useQuery({
+    queryKey: ["home-blog"],
+    queryFn: () => fetchLatestPosts(3),
+    staleTime: 5 * 60_000,
   });
 
   const greeting = (() => {
@@ -141,6 +152,12 @@ export default function Home() {
             color="#7F3C12"
             onPress={() => router.push("/achievements")}
           />
+          <QuickAction
+            label="Blog"
+            icon={<BookOpen size={20} color="#fff" />}
+            color="#2D5016"
+            onPress={() => router.push("/blog")}
+          />
         </View>
       </ScrollView>
 
@@ -206,8 +223,78 @@ export default function Home() {
         Explore the encyclopedia
       </Button>
 
+      {/* Field journal — latest blog posts pulled live from the website DB */}
+      <View className="mt-8 flex-row items-center justify-between">
+        <View className="flex-row items-center gap-2">
+          <BookOpen size={16} color="#4A7C2A" />
+          <Text className="text-sm font-bold uppercase tracking-wider text-forest-600">
+            From the field journal
+          </Text>
+        </View>
+        <Pressable onPress={() => router.push("/blog")} hitSlop={8} className="flex-row items-center gap-1">
+          <Text className="text-xs font-semibold text-forest-700">View all</Text>
+          <ArrowRight size={12} color="#4A7C2A" />
+        </Pressable>
+      </View>
+
+      {blog.isLoading && (
+        <Card className="mt-2">
+          <Text className="text-sm text-forest-700">Loading latest articles…</Text>
+        </Card>
+      )}
+
+      {!blog.isLoading && (blog.data ?? []).length === 0 && (
+        <Card className="mt-2">
+          <Text className="text-sm text-forest-700">
+            New field notes are added every week. Check back soon.
+          </Text>
+        </Card>
+      )}
+
+      {(blog.data ?? []).map((post) => {
+        const slug = post.slug.startsWith("/") ? post.slug.slice(1) : post.slug;
+        return (
+          <Pressable key={post.id} onPress={() => router.push(`/blog/${slug}`)}>
+            <Card className="mt-2 flex-row items-center gap-3 overflow-hidden">
+              {post.featured_image ? (
+                <Image
+                  source={{ uri: post.featured_image }}
+                  style={{ width: 64, height: 64, borderRadius: 10, backgroundColor: "#E6EFDB" }}
+                  contentFit="cover"
+                />
+              ) : (
+                <View className="h-16 w-16 items-center justify-center rounded-xl bg-forest-100">
+                  <BookOpen size={22} color="#4A7C2A" />
+                </View>
+              )}
+              <View className="flex-1">
+                <Text
+                  className="font-display text-sm font-bold leading-snug text-forest-900"
+                  numberOfLines={2}
+                >
+                  {post.title}
+                </Text>
+                <View className="mt-1 flex-row items-center gap-2">
+                  {post.category && (
+                    <Text className="text-[10px] font-bold uppercase tracking-wider text-forest-600">
+                      {post.category}
+                    </Text>
+                  )}
+                  {post.read_time ? (
+                    <View className="flex-row items-center gap-0.5">
+                      <Clock size={9} color="#7A8B6A" />
+                      <Text className="text-[10px] text-forest-600">{post.read_time} min</Text>
+                    </View>
+                  ) : null}
+                </View>
+              </View>
+            </Card>
+          </Pressable>
+        );
+      })}
+
       {/* Earn credits via rewarded ad — auto-hidden for premium */}
-      <View className="mt-3">
+      <View className="mt-6">
         <RewardedAdButton />
       </View>
 
