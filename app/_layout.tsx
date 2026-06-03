@@ -11,11 +11,7 @@ import Toast from "react-native-toast-message";
 
 import { useAuthStore } from "@/stores/authStore";
 import { initAds } from "@/lib/ads";
-import { initSentry } from "@/lib/sentry";
 import { initPostHog } from "@/lib/posthog";
-
-// Initialize Sentry as early as possible — synchronous, before render.
-initSentry();
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 

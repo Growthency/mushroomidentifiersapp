@@ -120,6 +120,12 @@
       "expo-secure-store",
       "expo-localization",
       [
+        "expo-auth-session",
+        {
+          "scheme": "mushroomid"
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#0F1B0A",

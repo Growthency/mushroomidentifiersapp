@@ -76,10 +76,6 @@ export const config = {
     apiKey: read("EXPO_PUBLIC_OPENWEATHER_API_KEY") ?? "",
   },
 
-  sentry: {
-    dsn: read("EXPO_PUBLIC_SENTRY_DSN") ?? "",
-  },
-
   posthog: {
     apiKey: read("EXPO_PUBLIC_POSTHOG_API_KEY") ?? "",
     host: read("EXPO_PUBLIC_POSTHOG_HOST") ?? "https://us.i.posthog.com",
