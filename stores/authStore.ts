@@ -30,18 +30,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { data } = await supabase.auth.getSession();
     set({ session: data.session, user: data.session?.user ?? null, loading: false });
 
-    if (data.session?.user) {
-      await initRevenueCat(data.session.user.id);
-    } else {
-      await initRevenueCat();
-    }
+    // Fire-and-forget — RevenueCat's first network call can take many seconds
+    // and used to hang the splash screen on real devices. Don't block UI.
+    initRevenueCat(data.session?.user?.id ?? null).catch(() => {});
 
-    supabase.auth.onAuthStateChange(async (_event, session) => {
+    supabase.auth.onAuthStateChange((_event, session) => {
       set({ session, user: session?.user ?? null });
       if (session?.user) {
-        await loginRevenueCat(session.user.id);
+        loginRevenueCat(session.user.id).catch(() => {});
       } else {
-        await logoutRevenueCat();
+        logoutRevenueCat().catch(() => {});
       }
     });
   },

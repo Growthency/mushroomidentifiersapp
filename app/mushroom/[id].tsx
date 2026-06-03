@@ -112,6 +112,11 @@ export default function MushroomDetail() {
     enabled: !!id,
   });
 
+  // ⚠️ All hooks must run on every render, ABOVE any early return.
+  // Previously useLookalikes was called after the loading-guard, which violated
+  // Rules of Hooks and crashed the screen the moment data resolved.
+  const lookalikes = useLookalikes(data?.lookalike_ids ?? []);
+
   if (isLoading || !data) {
     return (
       <Screen>
@@ -126,11 +131,6 @@ export default function MushroomDetail() {
 
   const cleanedDescription = cleanDescription(data.description);
   const risk = riskLevel(data.edibility);
-
-  // Lookalikes — pull rows by id from our DB
-  const lookalikes = useLookalikes(data.lookalike_ids);
-
-  // Pros / cons derived from edibility + toxicity notes
   const { pros, cons } = derivePros(data);
 
   return (

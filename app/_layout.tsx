@@ -33,6 +33,10 @@ export default function RootLayout() {
     init().finally(() => SplashScreen.hideAsync().catch(() => {}));
     initAds().catch(() => {});
     initPostHog().catch(() => {});
+    // Safety net — never leave the splash visible longer than 6 seconds even
+    // if a third-party SDK is misbehaving (RevenueCat, AdMob, network stall).
+    const safety = setTimeout(() => SplashScreen.hideAsync().catch(() => {}), 6000);
+    return () => clearTimeout(safety);
   }, [init]);
 
   if (loading) return null;
