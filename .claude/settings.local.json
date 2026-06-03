@@ -106,7 +106,9 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code} bytes=%{size_download} time=%{time_total}s\\\\n\" \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&lazy=true\" --max-time 180)",
       "Bash(eas build:view d1c31444-08a9-479b-989c-cc10e811ccf6 --json)",
       "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\);process.stdin.on\\('end',\\(\\)=>{const b=JSON.parse\\(s\\);console.log\\('status:', b.status, 'artifact:', b.artifacts?.applicationArchiveUrl\\)}\\)\")",
-      "Bash(eas build:cancel d1c31444-08a9-479b-989c-cc10e811ccf6 --non-interactive)"
+      "Bash(eas build:cancel d1c31444-08a9-479b-989c-cc10e811ccf6 --non-interactive)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} time=%{time_total}s\\\\n\" \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&lazy=true\" --max-time 60)",
+      "Bash(eas build:cancel f89989a3-3278-4a69-b7f6-a58d246d9e9f --non-interactive)"
     ]
   }
 }

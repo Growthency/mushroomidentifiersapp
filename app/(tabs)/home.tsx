@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import * as Location from "expo-location";
@@ -122,44 +122,43 @@ export default function Home() {
         </Card>
       )}
 
-      {/* Quick actions */}
+      {/* Quick actions — 5 items evenly distributed so they all fit on a
+          single phone-width row without needing a horizontal scroll. */}
       <Text className="mt-6 mb-2 text-sm font-bold uppercase tracking-wider text-forest-600">
         Quick actions
       </Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-5 px-5">
-        <View className="flex-row gap-3">
-          <QuickAction
-            label="AI Mycologist"
-            icon={<MessageCircle size={20} color="#fff" />}
-            color="#4A7C2A"
-            onPress={() => router.push("/chat")}
-          />
-          <QuickAction
-            label="Poison control"
-            icon={<Phone size={20} color="#fff" />}
-            color="#E03131"
-            onPress={() => router.push("/emergency")}
-          />
-          <QuickAction
-            label="Lookalike check"
-            icon={<ShieldAlert size={20} color="#fff" />}
-            color="#D2691E"
-            onPress={() => router.push("/(tabs)/library?filter=poisonous")}
-          />
-          <QuickAction
-            label="Achievements"
-            icon={<Trophy size={20} color="#fff" />}
-            color="#7F3C12"
-            onPress={() => router.push("/achievements")}
-          />
-          <QuickAction
-            label="Blog"
-            icon={<BookOpen size={20} color="#fff" />}
-            color="#2D5016"
-            onPress={() => router.push("/blog")}
-          />
-        </View>
-      </ScrollView>
+      <View className="flex-row gap-2">
+        <QuickAction
+          label="AI Chat"
+          icon={<MessageCircle size={18} color="#fff" />}
+          color="#4A7C2A"
+          onPress={() => router.push("/chat")}
+        />
+        <QuickAction
+          label="Poison"
+          icon={<Phone size={18} color="#fff" />}
+          color="#E03131"
+          onPress={() => router.push("/emergency")}
+        />
+        <QuickAction
+          label="Lookalike"
+          icon={<ShieldAlert size={18} color="#fff" />}
+          color="#D2691E"
+          onPress={() => router.push("/(tabs)/library?filter=poisonous")}
+        />
+        <QuickAction
+          label="Awards"
+          icon={<Trophy size={18} color="#fff" />}
+          color="#7F3C12"
+          onPress={() => router.push("/achievements")}
+        />
+        <QuickAction
+          label="Blog"
+          icon={<BookOpen size={18} color="#fff" />}
+          color="#2D5016"
+          onPress={() => router.push("/blog")}
+        />
+      </View>
 
       {/* Trending — real iNaturalist data, recent fungi observations near user */}
       <View className="mt-6 flex-row items-center gap-2">
@@ -315,15 +314,22 @@ function QuickAction({
   color: string;
   onPress: () => void;
 }) {
+  // flex-1 = equal width per item; on a 360px phone with 4×8px gaps each
+  // tile gets ~65px which is enough for the 48px circle + a short label.
   return (
-    <Pressable onPress={onPress} className="w-28 items-center gap-2">
+    <Pressable onPress={onPress} className="flex-1 items-center gap-1.5">
       <View
         style={{ backgroundColor: color }}
-        className="h-14 w-14 items-center justify-center rounded-2xl"
+        className="h-12 w-12 items-center justify-center rounded-2xl"
       >
         {icon}
       </View>
-      <Text className="text-center text-xs font-semibold text-forest-800">{label}</Text>
+      <Text
+        className="text-center text-[11px] font-semibold text-forest-800"
+        numberOfLines={1}
+      >
+        {label}
+      </Text>
     </Pressable>
   );
 }
