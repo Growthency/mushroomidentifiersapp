@@ -87,7 +87,26 @@
       "Bash(curl -s -o /tmp/b.txt -w \"HTTP %{http_code} size:%{size_download} time:%{time_total}s\\\\n\" \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable\")",
       "Bash(curl -s -o /tmp/b2.txt -w \"HTTP %{http_code} size:%{size_download}\\\\n\" \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable\")",
       "Bash(curl -s -o /tmp/b3.txt -w \"HTTP %{http_code} size:%{size_download}\\\\n\" \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable\")",
-      "Bash(curl -s -o /tmp/v.txt -w \"HTTP %{http_code} size:%{size_download}\\\\n\" \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable\")"
+      "Bash(curl -s -o /tmp/v.txt -w \"HTTP %{http_code} size:%{size_download}\\\\n\" \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable\")",
+      "Bash(npx eas-cli@latest build:view 9ba75773-8375-4a01-ade8-4fe341add55e)",
+      "Bash(curl -s -o /tmp/b.txt -w \"BUNDLE %{http_code} size:%{size_download}\\\\n\" \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable\")",
+      "Bash(start \"\" \"http://localhost:8081\")",
+      "Bash(curl -s \"https://tsbxbtajtzfvianasoaw.supabase.co/rest/v1/blog_posts?select=*&limit=1\" -H \"apikey: sb_publishable_FMaxRFjX6w-DUGPNyIsCEw_jCdsmiKB\" -H \"Authorization: Bearer sb_publishable_FMaxRFjX6w-DUGPNyIsCEw_jCdsmiKB\")",
+      "Bash(curl -s \"https://tsbxbtajtzfvianasoaw.supabase.co/rest/v1/posts?select=*&limit=1\" -H \"apikey: sb_publishable_FMaxRFjX6w-DUGPNyIsCEw_jCdsmiKB\" -H \"Authorization: Bearer sb_publishable_FMaxRFjX6w-DUGPNyIsCEw_jCdsmiKB\")",
+      "Bash(curl -s \"https://tsbxbtajtzfvianasoaw.supabase.co/rest/v1/blog_posts?select=id,title,slug,excerpt,published_at,featured_image,hero_image,image_url,cover_image,thumbnail,category,author,read_time,reading_time&order=published_at.desc.nullslast&limit=2\" -H \"apikey: sb_publishable_FMaxRFjX6w-DUGPNyIsCEw_jCdsmiKB\" -H \"Authorization: Bearer sb_publishable_FMaxRFjX6w-DUGPNyIsCEw_jCdsmiKB\")",
+      "Bash(curl -s \"https://tsbxbtajtzfvianasoaw.supabase.co/rest/v1/blog_posts?select=*&limit=1&order=id.desc\" -H \"apikey: sb_publishable_FMaxRFjX6w-DUGPNyIsCEw_jCdsmiKB\" -H \"Authorization: Bearer sb_publishable_FMaxRFjX6w-DUGPNyIsCEw_jCdsmiKB\")",
+      "Bash(node -e \"let s=''; process.stdin.on\\('data', d=>s+=d\\); process.stdin.on\\('end', \\(\\)=>{const r=JSON.parse\\(s\\); console.log\\(Object.keys\\(r[0] ?? {}\\).sort\\(\\).join\\('\\\\n'\\)\\)}\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} %{size_download}\" \"http://localhost:8081/index.bundle?platform=web&dev=true\" --max-time 90)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8081/ --max-time 5)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} bytes=%{size_download} time=%{time_total}s\\\\n\" \"http://localhost:8081/index.bundle?platform=web&dev=true&hot=false&lazy=true\" --max-time 120)",
+      "Bash(curl -s \"http://localhost:8081/index.bundle?platform=web&dev=true\" --max-time 5)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} bytes=%{size_download} time=%{time_total}s\\\\n\" \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&lazy=true\" --max-time 120)",
+      "Bash(eas build *)",
+      "Bash(node -e \"const c=require\\('./app.json'\\); console.log\\(JSON.stringify\\(c.expo.splash || c.expo.plugins?.find\\(p=>Array.isArray\\(p\\)&&p[0]==='expo-splash-screen'\\), null, 2\\)\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} bytes=%{size_download} time=%{time_total}s\\\\n\" \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&lazy=true\" --max-time 180)",
+      "Bash(eas build:view d1c31444-08a9-479b-989c-cc10e811ccf6 --json)",
+      "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\);process.stdin.on\\('end',\\(\\)=>{const b=JSON.parse\\(s\\);console.log\\('status:', b.status, 'artifact:', b.artifacts?.applicationArchiveUrl\\)}\\)\")",
+      "Bash(eas build:cancel d1c31444-08a9-479b-989c-cc10e811ccf6 --non-interactive)"
     ]
   }
 }

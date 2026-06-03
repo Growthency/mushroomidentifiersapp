@@ -27,13 +27,34 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loading: true,
 
   init: async () => {
-    const { data } = await supabase.auth.getSession();
-    set({ session: data.session, user: data.session?.user ?? null, loading: false });
+    // Hard 4-second timeout on the session lookup. On a fresh install
+    // (no AsyncStorage entry yet) Supabase usually responds in ~50ms, but
+    // a flaky network or a cold AsyncStorage init has been observed to
+    // stall indefinitely on real Android devices — which previously left
+    // the UI rendering `null` forever, i.e. the blank-white screen the
+    // user saw after the splash hid. We now ALWAYS finish in ≤4s and
+    // proceed as logged-out if Supabase didn't answer in time.
+    let finished = false;
+    const finish = (session: Session | null) => {
+      if (finished) return;
+      finished = true;
+      set({ session, user: session?.user ?? null, loading: false });
+      initRevenueCat(session?.user?.id ?? null).catch(() => {});
+    };
 
-    // Fire-and-forget — RevenueCat's first network call can take many seconds
-    // and used to hang the splash screen on real devices. Don't block UI.
-    initRevenueCat(data.session?.user?.id ?? null).catch(() => {});
+    const timeout = setTimeout(() => finish(null), 4000);
 
+    try {
+      const { data } = await supabase.auth.getSession();
+      clearTimeout(timeout);
+      finish(data.session ?? null);
+    } catch {
+      clearTimeout(timeout);
+      finish(null);
+    }
+
+    // Register the listener regardless — once Supabase eventually responds
+    // (even after the timeout fired) the session will sync in here.
     supabase.auth.onAuthStateChange((_event, session) => {
       set({ session, user: session?.user ?? null });
       if (session?.user) {
