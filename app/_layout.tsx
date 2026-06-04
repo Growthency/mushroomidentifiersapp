@@ -1,10 +1,8 @@
 import "../global.css";
 
-// Defensive native-module init. These side-effect imports normally MUST be
-// the very first thing the bundle does, but on some Android devices a
-// failed init at this point silently kills the React tree — producing the
-// blank-white-screen bug Build 12 had. Wrapping them in try-catch makes the
-// app survive (screen animations may degrade gracefully) instead of dying.
+// Defensive native-module init. JS top-level `import` statements can't be
+// try-caught; converting them to `require()` inside a try/catch lets the
+// bundle entry survive even if a native module's JS-side init throws.
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require("react-native-gesture-handler");
@@ -22,7 +20,6 @@ try {
 
 import { Stack, SplashScreen } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
@@ -57,8 +54,6 @@ export default function RootLayout() {
       useAuthStore.setState((s) => (s.loading ? { loading: false } : {}));
     });
 
-    // Side-effect SDK inits are deferred and lazy-required so a native crash
-    // doesn't take down the bundle entry.
     (async () => {
       try {
         const ads = await import("@/lib/ads");
@@ -92,30 +87,41 @@ export default function RootLayout() {
 
   const splashVisible = loading || !minDelayDone;
 
+  // Removed in Build 16:
+  //   - <GestureHandlerRootView> wrap → suspected of crashing on cold start
+  //     on certain Android devices when paired with Reanimated v4 + new
+  //     arch. Without it, basic touch/scroll still works; only complex
+  //     gestures inside ScrollViews degrade. Worth the trade-off until we
+  //     can prove it's NOT the culprit.
+  //   - `animation: "fade"` on the (auth)/(tabs) screens → fade triggers a
+  //     Reanimated worklet. Setting all screens to "none" ensures no
+  //     animation worklet runs during the very first route transition.
   return (
     <RootErrorBoundary>
-      <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#F1F6ED" }}>
-        <QueryClientProvider client={queryClient}>
-          <StatusBar style="auto" />
-          <View style={{ flex: 1, backgroundColor: "#F1F6ED" }}>
-            <Stack
-              screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#F1F6ED" } }}
-            >
-              <Stack.Screen name="index" />
-              <Stack.Screen name="(auth)" options={{ animation: "fade" }} />
-              <Stack.Screen name="(tabs)" options={{ animation: "fade" }} />
-              <Stack.Screen name="scan" options={{ presentation: "modal" }} />
-              <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
-              <Stack.Screen name="mushroom/[id]" />
-              <Stack.Screen name="blog/index" />
-              <Stack.Screen name="blog/[slug]" />
-              <Stack.Screen name="chat" options={{ presentation: "modal" }} />
-            </Stack>
-            <AppSplash visible={splashVisible} />
-          </View>
-          <Toast />
-        </QueryClientProvider>
-      </GestureHandlerRootView>
+      <QueryClientProvider client={queryClient}>
+        <StatusBar style="auto" />
+        <View style={{ flex: 1, backgroundColor: "#F1F6ED" }}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: "none",
+              contentStyle: { backgroundColor: "#F1F6ED" },
+            }}
+          >
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="scan" options={{ presentation: "modal" }} />
+            <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
+            <Stack.Screen name="mushroom/[id]" />
+            <Stack.Screen name="blog/index" />
+            <Stack.Screen name="blog/[slug]" />
+            <Stack.Screen name="chat" options={{ presentation: "modal" }} />
+          </Stack>
+          <AppSplash visible={splashVisible} />
+        </View>
+        <Toast />
+      </QueryClientProvider>
     </RootErrorBoundary>
   );
 }
